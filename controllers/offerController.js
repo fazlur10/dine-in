@@ -108,11 +108,44 @@ const deleteOffer = async (req, res, next) => {
         res.status(400).send(error.message);
     }
 }
+
+const getAllOffersbyResutarant = async(req,res, next) =>{
+    try{
+        const id = req.params.id;
+        const offers = await firestore.collection('restuarants').doc(id).collection('offers').where('status', '==', 'active');
+        const data = await offers.get();
+        const offersArray = [];
+        if(data.empty) {
+            res.status(404).send('No offer record found');
+        }else {
+            data.forEach(doc => {
+                const offer = new Offer(
+                    doc.id,
+                    doc.data().uniq_id,
+                    doc.data().heading,
+                    doc.data().description,
+                    doc.data().terms,
+                    doc.data().promocode,
+                    doc.data().start_date,
+                    doc.data().end_date,
+                    doc.data().food_title,
+                    doc.data().category_title
+                );
+                offersArray.push(offer);
+            });
+            res.send(offersArray);
+        }
+    }
+    catch(error) {
+        res.status(400).send(error.message);
+    }
+}
 module.exports = {
     addOffer, 
     getAllOffers,
     getOffer,
     getOfferID,
     updateOffer,
-    deleteOffer
+    deleteOffer,
+    getAllOffersbyResutarant
 }
